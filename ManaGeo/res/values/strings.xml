@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">ManaGeo</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="cell_description">Contents of cell</string>
+    <string name="direction">The direction you are facing</string>
+    <string name="tile_inventory">Tile Inventory</string>
+    <string name="personal_inventory">Personal Inventory</string>
+    <string name="structure_interact">Interact</string>
+    <string name="title_activity_build">BuildActivity</string>
+    <string name="build_title">Choose a structure to build</string>
+    <string name="build_mine">Mine</string>
+    <string name="build_refinery">Refinery</string>
+    <string name="build_warehouse">Warehouse</string>
+    <string name="title_activity_interact">TileInteractActivity</string>
+    <string name="title_activity_inventory">InventoryActivity</string>
+    <string name="transfer">Transfer</string>
+    <string name="inventory">Inventory</string>
+
+</resources>
