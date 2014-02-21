@@ -19,6 +19,7 @@ public class InventoryHolder {
 	public static int getInventorySize() {return inventorySize;}
 
 	/**Adds a list of items to the player's inventory if the inventory is big enough
+	 * If an item is given with 0 quantity, it will not be added.
 	 * @param items - List of items to be added
 	 * @return true if the items were able to be added, false if not
 	 */

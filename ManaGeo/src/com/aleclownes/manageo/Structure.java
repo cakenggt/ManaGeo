@@ -14,9 +14,11 @@ public class Structure implements Serializable{
 	public double durability = 0;
 	public List<Item> inventory = new ArrayList<Item>();
 	
-	/**
-	 * @param items
-	 * @return
+	/**Adds the list of items to the inventory of this structure. If a 
+	 * stack of 0 items is given, it will not be added.
+	 * @param items - List of items to be added
+	 * @return - True or false depending on whether or not the items 
+	 * were able to be added due to inventory size restrictions.
 	 */
 	public boolean addItems (List<Item> items){
 		int total = 0;

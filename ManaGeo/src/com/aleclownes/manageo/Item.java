@@ -49,4 +49,11 @@ public class Item implements Serializable{
 	public void setQuantity(int i){
 		quantity = i;
 	}
+	
+	/**Returns a copy of this item.
+	 * @return The copy of this item.
+	 */
+	public Item copy(){
+		return new Item(type, quantity);
+	}
 }

@@ -1,5 +1,9 @@
 package com.aleclownes.manageo;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import Structures.Mine;
 import Structures.Refinery;
 import Structures.Warehouse;
@@ -110,27 +114,111 @@ public class BuildActivity extends Activity {
 	 * @param view
 	 */
 	public void buildMine(View view){
-		//TODO tileInventory resource check for 5 wood
-		curTile.aboveGround = new Mine();
-		finish();
+		//tileInventory resource check for 5 wood
+		boolean wood = false;
+		List<Item> newInv = new ArrayList<Item>();
+		Iterator<Item> it = curTile.aboveGround.inventory.iterator();
+		while (it.hasNext()){
+			Item item = it.next();
+			if (item.type == Material.WOOD && item.getQuantity() >= 5){
+				wood = true;
+				Item copy = item.copy();
+				copy.setQuantity(item.getQuantity()-5);
+				newInv.add(copy);
+			}
+			else{
+				newInv.add(item.copy());
+			}
+		}
+		if (wood){
+			curTile.aboveGround = new Mine();
+			curTile.aboveGround.addItems(newInv);
+			finish();
+		}
+		else{
+			//TODO display notification that they dont have enough materials
+		}
 	}
 
 	/**If the refinery button is clicked
 	 * @param view
 	 */
 	public void buildRefinery(View view){
-		//TODO tileInventory resource check for 7 wood, 3 granite
-		curTile.aboveGround = new Refinery();
-		finish();
+		//tileInventory resource check for 7 wood, 3 granite
+		boolean wood = false;
+		boolean granite = false;
+		List<Item> newInv = new ArrayList<Item>();
+		Iterator<Item> it = curTile.aboveGround.inventory.iterator();
+		while (it.hasNext()){
+			Item item = it.next();
+			if (item.type == Material.WOOD && item.getQuantity() >= 5){
+				wood = true;
+				Item copy = item.copy();
+				copy.setQuantity(item.getQuantity()-5);
+				newInv.add(copy);
+			}
+			else if (item.type == Material.GRANITE && item.quantity >= 3){
+				granite = true;
+				Item copy = item.copy();
+				copy.setQuantity(item.getQuantity()-3);
+				newInv.add(copy);
+			}
+			else{
+				newInv.add(item.copy());
+			}
+		}
+		if (wood && granite){
+			curTile.aboveGround = new Refinery();
+			curTile.aboveGround.addItems(newInv);
+			finish();
+		}
+		else{
+			//TODO display notification that they dont have enough materials
+		}
 	}
 
 	/**If the warehouse button is clicked
 	 * @param view
 	 */
 	public void buildWarehouse(View view){
-		//TODO tileInventory resource check for 5 wood, 2 granite, 3 iron
-		curTile.aboveGround = new Warehouse();
-		finish();
+		//tileInventory resource check for 5 wood, 2 granite, 3 iron
+		boolean wood = false;
+		boolean granite = false;
+		boolean iron = false;
+		List<Item> newInv = new ArrayList<Item>();
+		Iterator<Item> it = curTile.aboveGround.inventory.iterator();
+		while (it.hasNext()){
+			Item item = it.next();
+			if (item.type == Material.WOOD && item.getQuantity() >= 5){
+				wood = true;
+				Item copy = item.copy();
+				copy.setQuantity(item.getQuantity()-5);
+				newInv.add(copy);
+			}
+			else if (item.type == Material.GRANITE && item.quantity >= 2){
+				granite = true;
+				Item copy = item.copy();
+				copy.setQuantity(item.getQuantity()-2);
+				newInv.add(copy);
+			}
+			else if (item.type == Material.IRON_INGOT && item.quantity >= 3){
+				iron = true;
+				Item copy = item.copy();
+				copy.setQuantity(item.getQuantity()-3);
+				newInv.add(copy);
+			}
+			else{
+				newInv.add(item.copy());
+			}
+		}
+		if (wood && granite && iron){
+			curTile.aboveGround = new Warehouse();
+			curTile.aboveGround.addItems(newInv);
+			finish();
+		}
+		else{
+			//TODO display notification that they dont have enough materials
+		}
 	}
 
 }
