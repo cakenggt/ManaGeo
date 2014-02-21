@@ -11,7 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import Structures.Forest;
 import Structures.Plain;
+import Structures.Warehouse;
 import android.graphics.Matrix;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -204,7 +206,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 				if (cur != null) {
 					Coord disp = cur.getRelative(x - 1, y - 1);
 					if (!tiles.containsKey(disp)) {
-						tiles.put(disp, new Tile());
+						tiles.put(disp, new Tile(disp));
 					}
 					square.setImageResource(tiles.get(disp).aboveGround.type.icon());
 				}
@@ -213,10 +215,20 @@ public class MainActivity extends Activity implements SensorEventListener{
 				}
 			}
 		}
-		//set interact button text
+		//set text and visibility for buttons
 		Button interact = (Button)findViewById(R.id.interact);
+		Button destroy = (Button)findViewById(R.id.destroy);
 		if (cur != null){
-			interact.setText(tiles.get(cur).aboveGround.type.interactText());
+			Tile tile = tiles.get(cur);
+			if (tile.aboveGround instanceof Warehouse){
+				interact.setVisibility(View.GONE);
+			}
+			else if (tile.aboveGround instanceof Plain || tile.aboveGround instanceof Forest){
+				destroy.setVisibility(View.GONE);
+			}
+			else{
+				interact.setText(tile.aboveGround.type.interactText());
+			}
 		}
 	}
 
@@ -230,7 +242,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 		dir.setImageResource(R.drawable.direction);
 		dir.setImageMatrix(matrix);
 	}
-	
+
 	/**The method that fires on the inventory button's onClick
 	 * @param v
 	 */
@@ -252,6 +264,15 @@ public class MainActivity extends Activity implements SensorEventListener{
 			Intent intent = new Intent(this, TileInteractActivity.class);
 			startActivity(intent);
 		}
+	}
+	
+	/**The method that fires on the destroy button's onClick
+	 * 
+	 */
+	public void destroy(View v){
+		//TODO pop up a dialog that notifies that all of the items in
+		//the structure's inventory will be lost
+		TileHolder.getTiles().get(new Coord(location)).aboveGround = new Plain();
 	}
 
 }

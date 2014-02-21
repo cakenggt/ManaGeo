@@ -32,33 +32,36 @@ public final class R {
         public static final int warehouse=0x7f020007;
     }
     public static final class id {
-        public static final int action_settings=0x7f08001a;
-        public static final int direction=0x7f080011;
-        public static final int imageView1=0x7f080008;
-        public static final int imageView2=0x7f080009;
-        public static final int imageView3=0x7f08000a;
-        public static final int imageView4=0x7f08000b;
-        public static final int imageView5=0x7f08000c;
-        public static final int imageView6=0x7f08000d;
-        public static final int imageView7=0x7f08000e;
-        public static final int imageView8=0x7f08000f;
-        public static final int imageView9=0x7f080010;
-        public static final int interact=0x7f080013;
-        public static final int inventory=0x7f080012;
-        public static final int item_name=0x7f080015;
-        public static final int item_name_and_check=0x7f080017;
-        public static final int item_quant=0x7f080016;
+        public static final int action_settings=0x7f08001d;
+        public static final int destroy=0x7f080016;
+        public static final int direction=0x7f080013;
+        public static final int imageView1=0x7f08000a;
+        public static final int imageView2=0x7f08000b;
+        public static final int imageView3=0x7f08000c;
+        public static final int imageView4=0x7f08000d;
+        public static final int imageView5=0x7f08000e;
+        public static final int imageView6=0x7f08000f;
+        public static final int imageView7=0x7f080010;
+        public static final int imageView8=0x7f080011;
+        public static final int imageView9=0x7f080012;
+        public static final int interact=0x7f080015;
+        public static final int inventory=0x7f080014;
+        public static final int item_name=0x7f080018;
+        public static final int item_name_and_check=0x7f08001a;
+        public static final int item_quant=0x7f080019;
+        public static final int mineCost=0x7f080002;
         public static final int mine_button=0x7f080001;
-        public static final int personal_inventory_list=0x7f080006;
-        public static final int progressBar1=0x7f080014;
-        public static final int quantBar=0x7f080018;
-        public static final int refinery_button=0x7f080002;
-        public static final int seekQuant=0x7f080019;
+        public static final int personal_inventory_list=0x7f080008;
+        public static final int progressBar1=0x7f080017;
+        public static final int quantBar=0x7f08001b;
+        public static final int refineryCost=0x7f080004;
+        public static final int refinery_button=0x7f080003;
+        public static final int seekQuant=0x7f08001c;
         public static final int textView1=0x7f080000;
-        public static final int textView2=0x7f080005;
-        public static final int tile_inventory_list=0x7f080004;
-        public static final int transfer=0x7f080007;
-        public static final int warehouse_button=0x7f080003;
+        public static final int tile_inventory_list=0x7f080007;
+        public static final int transfer=0x7f080009;
+        public static final int warehouseCost=0x7f080006;
+        public static final int warehouse_button=0x7f080005;
     }
     public static final class layout {
         public static final int activity_build=0x7f030000;
@@ -81,16 +84,20 @@ public final class R {
         public static final int build_title=0x7f050009;
         public static final int build_warehouse=0x7f05000c;
         public static final int cell_description=0x7f050003;
+        public static final int destroy=0x7f050014;
         public static final int direction=0x7f050004;
         public static final int hello_world=0x7f050002;
         public static final int inventory=0x7f050010;
+        public static final int mineCost=0x7f050011;
         public static final int personal_inventory=0x7f050006;
+        public static final int refineryCost=0x7f050012;
         public static final int structure_interact=0x7f050007;
         public static final int tile_inventory=0x7f050005;
         public static final int title_activity_build=0x7f050008;
         public static final int title_activity_interact=0x7f05000d;
         public static final int title_activity_inventory=0x7f05000e;
         public static final int transfer=0x7f05000f;
+        public static final int warehouseCost=0x7f050013;
     }
     public static final class style {
         /** 

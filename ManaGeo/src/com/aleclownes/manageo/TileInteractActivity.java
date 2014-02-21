@@ -79,7 +79,7 @@ public class TileInteractActivity extends Activity implements SensorEventListene
 			curTile = TileHolder.getTiles().get(curCoord);
 			((ListView)findViewById(R.id.tile_inventory_list)).setAdapter(new ItemAdapter(this));
 			//Setting whether you are interacting or building the structure
-			TextView interactText = (TextView)findViewById(R.id.textView2);
+			TextView interactText = (TextView)findViewById(R.id.mineCost);
 			ProgressBar progress = (ProgressBar)findViewById(R.id.progressBar1);
 			if (!(curTile.aboveGround instanceof Forest)){
 				if (curTile.aboveGround.durability < curTile.aboveGround.type.durability()){
@@ -128,7 +128,7 @@ public class TileInteractActivity extends Activity implements SensorEventListene
 			((StructureInterface) curTile.aboveGround).interact(curTile, mag);
 			((ListView)findViewById(R.id.tile_inventory_list)).setAdapter(new ItemAdapter(this));
 			//Setting whether you are interacting or building the structure
-			TextView interactText = (TextView)findViewById(R.id.textView2);
+			TextView interactText = (TextView)findViewById(R.id.mineCost);
 			ProgressBar progress = (ProgressBar)findViewById(R.id.progressBar1);
 			if (!(curTile.aboveGround instanceof Forest)){
 				if (curTile.aboveGround.durability < curTile.aboveGround.type.durability()){

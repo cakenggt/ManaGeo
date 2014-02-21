@@ -33,4 +33,20 @@ public class Item implements Serializable{
         	return false;
         }
     }
+	
+	public Material getType(){
+		return type;
+	}
+	
+	public void setType(Material mat){
+		type = mat;
+	}
+	
+	public int getQuantity(){
+		return quantity;
+	}
+	
+	public void setQuantity(int i){
+		quantity = i;
+	}
 }

@@ -110,6 +110,7 @@ public class BuildActivity extends Activity {
 	 * @param view
 	 */
 	public void buildMine(View view){
+		//TODO tileInventory resource check for 5 wood
 		curTile.aboveGround = new Mine();
 		finish();
 	}
@@ -118,6 +119,7 @@ public class BuildActivity extends Activity {
 	 * @param view
 	 */
 	public void buildRefinery(View view){
+		//TODO tileInventory resource check for 7 wood, 3 granite
 		curTile.aboveGround = new Refinery();
 		finish();
 	}
@@ -126,6 +128,7 @@ public class BuildActivity extends Activity {
 	 * @param view
 	 */
 	public void buildWarehouse(View view){
+		//TODO tileInventory resource check for 5 wood, 2 granite, 3 iron
 		curTile.aboveGround = new Warehouse();
 		finish();
 	}

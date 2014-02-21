@@ -122,5 +122,12 @@
         android:layout_height="wrap_content"
         android:onClick="interact"
         android:text="@string/structure_interact" />
+    
+    <Button
+        android:id="@+id/destroy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="destroy"
+        android:text="@string/destroy" />
 
 </LinearLayout>

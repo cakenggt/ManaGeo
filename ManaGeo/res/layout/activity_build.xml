@@ -25,6 +25,12 @@
         android:onClick="buildMine"
         android:text="@string/build_mine" />
 
+    <TextView
+        android:id="@+id/mineCost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/mineCost" />
+
     <Button
         android:id="@+id/refinery_button"
         android:layout_width="match_parent"
@@ -32,11 +38,23 @@
         android:onClick="buildRefinery"
         android:text="@string/build_refinery" />
 
+    <TextView
+        android:id="@+id/refineryCost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/refineryCost" />
+
     <Button
         android:id="@+id/warehouse_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="buildWarehouse"
         android:text="@string/build_warehouse" />
+
+    <TextView
+        android:id="@+id/warehouseCost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/warehouseCost" />
 
 </LinearLayout>

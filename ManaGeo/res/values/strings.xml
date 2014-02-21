@@ -18,5 +18,9 @@
     <string name="title_activity_inventory">InventoryActivity</string>
     <string name="transfer">Transfer</string>
     <string name="inventory">Inventory</string>
+    <string name="mineCost">Cost: 5 Wood</string>
+    <string name="refineryCost">Cost: 7 Wood, 3 Granite</string>
+    <string name="warehouseCost">Cost: 5 Wood, 2 Granite, 3 Iron Ingot</string>
+    <string name="destroy">Destroy</string>
 
 </resources>
