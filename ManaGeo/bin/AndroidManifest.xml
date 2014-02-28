@@ -44,6 +44,14 @@
             android:name="com.aleclownes.manageo.InventoryActivity"
             android:label="@string/title_activity_inventory" >
         </activity>
+        <activity
+            android:name="com.aleclownes.manageo.CitizenActivity"
+            android:label="@string/title_activity_citizen" >
+        </activity>
+        <activity
+            android:name="com.aleclownes.manageo.HireActivity"
+            android:label="@string/title_activity_hire" >
+        </activity>
     </application>
 
 </manifest>

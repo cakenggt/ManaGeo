@@ -22,5 +22,16 @@
     <string name="refineryCost">Cost: 7 Wood, 3 Granite</string>
     <string name="warehouseCost">Cost: 5 Wood, 2 Granite, 3 Iron Ingot</string>
     <string name="destroy">Destroy</string>
+    <string name="coordinates">Coordinates</string>
+    <string name="title_activity_citizen">CitizenActivity</string>
+    <string name="citizens_employed">Citizens Employed Here</string>
+    <string name="citizens_unemployed">Unemployed Citizens</string>
+    <string name="title_activity_hire">HireActivity</string>
+    <string name="courier_options">Courier Options</string>
+    <string name="source_coords">Source Tile Coordinates</string>
+    <string name="source_x_coord">Source X Coordinate</string>
+    <string name="source_y_coord">Source Y Coordinate</string>
+    <string name="source_material">Material to Transport</string>
+    <string name="finish">Finish</string>
 
 </resources>

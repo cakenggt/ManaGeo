@@ -2,25 +2,20 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal" >
+    android:orientation="vertical"
+    android:paddingLeft="5dp" >
     
     <TextView
-        android:id="@+id/item_name"
+        android:id="@+id/citizen_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dp"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <SeekBar
-        android:id="@+id/quantBar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1" />
-    
-    <TextView
-        android:id="@+id/seekQuant"
+    <Button
+        android:id="@+id/hire_fire_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:paddingLeft="5dp" />
 
 </LinearLayout>

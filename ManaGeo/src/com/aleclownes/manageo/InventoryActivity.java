@@ -15,9 +15,9 @@ import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.SeekBar;
+import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
@@ -26,7 +26,6 @@ public class InventoryActivity extends Activity {
 	LocationManager locationManager;
 	Coord curCoord;
 	Tile curTile;
-	Location curLoc;
 	List<Item> tileChecked = new ArrayList<Item>();
 	List<Item> persChecked = new ArrayList<Item>();
 
@@ -34,6 +33,9 @@ public class InventoryActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_inventory);
+		curCoord = InventoryHolder.getRecentCoord();
+		curTile = TileHolder.getTiles().get(curCoord);
+		refreshLists();
 
 		// Acquire a reference to the system Location Manager
 		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -41,15 +43,12 @@ public class InventoryActivity extends Activity {
 		LocationListener locationListener = new LocationListener() {
 			public void onLocationChanged(Location location) {
 				// Called when a new location is found by the network location provider.
-				curLoc = location;
-				curCoord = new Coord(curLoc);
-				curTile = TileHolder.getTiles().get(curCoord);
 				Coord newCoord = new Coord(location);
-				if (curCoord != null){
-					if (!newCoord.equals(curCoord)){
-						finish();
-					}
+				if (!newCoord.equals(InventoryHolder.getRecentCoord())){
+					InventoryHolder.getRecentCoord().change(newCoord);
+					finish();
 				}
+				refreshLists();
 			}
 
 			public void onStatusChanged(String provider, int status, Bundle extras) {}
@@ -70,14 +69,6 @@ public class InventoryActivity extends Activity {
 	@Override
 	public void onResume(){
 		super.onResume();
-		Location curLoc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-		if (curLoc != null){
-			curCoord = new Coord(curLoc);
-			curTile = TileHolder.getTiles().get(curCoord);
-			((ListView)findViewById(R.id.tile_inventory_list)).setAdapter(new TileInventoryAdapter(this));
-			((ListView)findViewById(R.id.personal_inventory_list)).setAdapter(new PersonalInventoryAdapter(this));
-		}
-
 	}
 
 	@Override
@@ -85,6 +76,14 @@ public class InventoryActivity extends Activity {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
+	}
+	
+	/**Refreshes the listviews
+	 * 
+	 */
+	public void refreshLists(){
+		((ListView)findViewById(R.id.tile_inventory_list)).setAdapter(new TileInventoryAdapter(this));
+		((ListView)findViewById(R.id.personal_inventory_list)).setAdapter(new PersonalInventoryAdapter(this));
 	}
 
 	/**What gets run when the transfer button is pressed
@@ -143,11 +142,16 @@ public class InventoryActivity extends Activity {
 			InventoryHolder.addItems(tileChecked);
 		}
 		else{
-			//TODO pop up error screen (like in duolingo) saying you cant move items
-			//because of inventory size restrictions
+			if (persQuant-persMoveQuant+tileMoveQuant > InventoryHolder.getInventorySize()){
+				Toast.makeText(this, "Transfer Failed: You cannot have more than " + InventoryHolder.getInventorySize() + " items in your personal inventory.",
+						Toast.LENGTH_LONG).show();
+			}
+			if (tileQuant-tileMoveQuant+persMoveQuant > curTile.aboveGround.type.inventorySize()){
+				Toast.makeText(this, "Transfer Failed: You cannot have more than " + curTile.aboveGround.type.inventorySize() + " items in this structure's inventory.",
+						Toast.LENGTH_LONG).show();
+			}
 		}
-		((ListView)findViewById(R.id.tile_inventory_list)).setAdapter(new TileInventoryAdapter(this));
-		((ListView)findViewById(R.id.personal_inventory_list)).setAdapter(new PersonalInventoryAdapter(this));
+		refreshLists();
 		tileChecked.clear();
 		persChecked.clear();
 	}
@@ -167,50 +171,14 @@ public class InventoryActivity extends Activity {
 		public View getView(int position, View convertView, ViewGroup parent){
 			curItem = curTile.aboveGround.inventory.get(position);
 			LayoutInflater inflater = context.getLayoutInflater();
-			View row = inflater.inflate(R.layout.inventory_row, null);
+			final View row = inflater.inflate(R.layout.inventory_row, null);
 			final SeekBar quantBar = (SeekBar)row.findViewById(R.id.quantBar);
-			CheckBox name = (CheckBox)row.findViewById(R.id.item_name_and_check);
-			name.setText(curItem.type.toString());
-			name.setOnClickListener(new View.OnClickListener() {
-				public void onClick(View v) {
-					CheckBox cb = (CheckBox) v;
-					if (cb.isChecked()){
-						tileChecked.add(new Item(curItem.type, quantBar.getProgress()));
-					}
-					else{
-						Iterator<Item> it = tileChecked.iterator();
-						while (it.hasNext()){
-							Item next = it.next();
-							if (next.type == curItem.type){
-								it.remove();
-							}
-						}
-					}
-				}
-			});
-			TextView quant = (TextView)row.findViewById(R.id.item_quant);
-			quant.setText(Integer.toString(curItem.quantity));
+			TextView name = (TextView)row.findViewById(R.id.item_name);
+			name.setText(curItem.type.toString() + " " + Integer.toString(curItem.quantity));
 			quantBar.setMax(curItem.quantity);
-			quantBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener(){
-				public void onProgressChanged(SeekBar seekBar, int progress,
-						boolean fromUser) {
-					for (Item item : tileChecked){
-						if (item.type == curItem.type){
-							item.quantity = progress;
-						}
-					}
-				}
-				public void onStartTrackingTouch(SeekBar seekBar) {}
-				public void onStopTrackingTouch(SeekBar seekBar) {}
-			});
+			quantBar.setOnSeekBarChangeListener(new ItemSliderBarListener(row, tileChecked, curItem.copy()));
 			TextView seekQuant = (TextView)row.findViewById(R.id.seekQuant);
 			seekQuant.setText(Integer.toString(quantBar.getProgress()));
-			//TODO finish this to implement the seekbar
-			//use onProgressChanged to delete the only other
-			//stack of that material in it's corresponding list
-			//whether it is persChecked or tileChecked
-			//and then replace it with the new one
-			//make sure to delete any stacks with 0 quant
 			return row;
 		}
 	}
@@ -231,52 +199,64 @@ public class InventoryActivity extends Activity {
 		public View getView(int position, View convertView, ViewGroup parent){
 			curItem = InventoryHolder.getInventory().get(position);
 			LayoutInflater inflater = context.getLayoutInflater();
-			View row = inflater.inflate(R.layout.inventory_row, null);
+			final View row = inflater.inflate(R.layout.inventory_row, null);
 			final SeekBar quantBar = (SeekBar)row.findViewById(R.id.quantBar);
-			CheckBox name = (CheckBox)row.findViewById(R.id.item_name_and_check);
-			name.setText(curItem.type.toString());
-			name.setOnClickListener(new View.OnClickListener() {
-				public void onClick(View v) {
-					CheckBox cb = (CheckBox) v;
-					if (cb.isChecked()){
-						persChecked.add(curItem);
-					}
-					else{
-						Iterator<Item> it = persChecked.iterator();
-						while (it.hasNext()){
-							Item next = it.next();
-							if (next.type == curItem.type){
-								it.remove();
-							}
-						}
-					}
-				}
-			});
-			TextView quant = (TextView)row.findViewById(R.id.item_quant);
-			quant.setText(Integer.toString(curItem.quantity));
+			TextView name = (TextView)row.findViewById(R.id.item_name);
+			name.setText(curItem.type.toString() + " " + Integer.toString(curItem.quantity));
 			quantBar.setMax(curItem.quantity);
-			quantBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener(){
-				public void onProgressChanged(SeekBar seekBar, int progress,
-						boolean fromUser) {
-					for (Item item : persChecked){
-						if (item.type == curItem.type){
-							item.quantity = progress;
-						}
-					}
-				}
-				public void onStartTrackingTouch(SeekBar seekBar) {}
-				public void onStopTrackingTouch(SeekBar seekBar) {}
-			});
+			quantBar.setOnSeekBarChangeListener(new ItemSliderBarListener(row, persChecked, curItem));
 			TextView seekQuant = (TextView)row.findViewById(R.id.seekQuant);
 			seekQuant.setText(Integer.toString(quantBar.getProgress()));
-			//TODO finish this to implement the seekbar
-			//use onProgressChanged to delete the only other
-			//stack of that material in it's corresponding list
-			//whether it is persChecked or tileChecked
-			//and then replace it with the new one
-			//make sure to delete any stacks with 0 quant in transfer
 			return row;
 		}
+	}
+	
+	class ItemSliderBarListener implements OnSeekBarChangeListener {
+		
+		View row;
+		Item item;
+		List<Item> inventory;
+		
+		public ItemSliderBarListener(View row, List<Item> inventory, Item item){
+			super();
+			this.row = row;
+			this.item = item;
+			this.inventory = inventory;
+		}
+
+		@Override
+		public void onProgressChanged(SeekBar seekBar, int progress,
+				boolean fromUser) {
+			if (progress > 0){
+				boolean isInside = false;
+				for (Item item : inventory){
+					if (item.type == this.item.type){
+						isInside = true;
+						item.quantity = progress;
+					}
+				}
+				if (!isInside){
+					inventory.add(new Item(this.item.getType(), progress));
+				}
+			}
+			else{
+				Iterator<Item> it = inventory.iterator();
+				while (it.hasNext()){
+					Item item = it.next();
+					if (item.getType() == this.item.getType()){
+						it.remove();
+					}
+				}
+			}
+			((TextView)row.findViewById(R.id.seekQuant)).setText(Integer.toString(progress));			
+		}
+
+		@Override
+		public void onStartTrackingTouch(SeekBar seekBar) {}
+
+		@Override
+		public void onStopTrackingTouch(SeekBar seekBar) {}
+		
 	}
 
 }

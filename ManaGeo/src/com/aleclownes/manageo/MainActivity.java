@@ -24,29 +24,39 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
+import android.widget.TextView;
 
 public class MainActivity extends Activity implements SensorEventListener{
 
 	LocationManager locationManager;
 	SensorManager mSensorManager;
 	Sensor mMagnet;
-	Location location;
+	Sensor mAccele;
+	Coord curCoord;
+	float [] accele = new float [3];
+	float [] magnet = new float [3];
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		load();
+		curCoord = InventoryHolder.getRecentCoord();
 
 		mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
 		mMagnet = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+		mAccele = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
 		// Acquire a reference to the system Location Manager
 		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -55,7 +65,9 @@ public class MainActivity extends Activity implements SensorEventListener{
 		LocationListener locationListener = new LocationListener() {
 			public void onLocationChanged(Location location) {
 				// Called when a new location is found by the network location provider.
-				drawMap(location);
+				curCoord = new Coord(location);
+				drawMap();
+				InventoryHolder.getRecentCoord().change(curCoord);
 			}
 
 			public void onStatusChanged(String provider, int status, Bundle extras) {}
@@ -77,8 +89,9 @@ public class MainActivity extends Activity implements SensorEventListener{
 	public void onResume(){
 		super.onResume();
 		save();
-		drawMap(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+		drawMap();
 		mSensorManager.registerListener(this, mMagnet, SensorManager.SENSOR_DELAY_NORMAL);
+		mSensorManager.registerListener(this, mAccele, SensorManager.SENSOR_DELAY_NORMAL);
 	}
 
 	@Override
@@ -102,9 +115,23 @@ public class MainActivity extends Activity implements SensorEventListener{
 
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		float x = event.values[0];
-		float y = event.values[1];
-		drawDir(x, y);
+		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
+			accele = event.values;
+		}
+		else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD){
+			magnet = event.values;
+		}
+		float R[] = new float[9];
+		float I[] = new float[9];
+		boolean success = SensorManager.getRotationMatrix(R, I, accele, magnet);
+		float azimuth = 0;
+		if(success) {
+			float orientation[] = new float[3];
+			SensorManager.getOrientation(R, orientation);
+			azimuth = orientation[0]; // contains azimuth, pitch, roll
+		}
+		drawDir(azimuth);
+		drawButtons();
 	}
 
 	private void save(){
@@ -125,6 +152,17 @@ public class MainActivity extends Activity implements SensorEventListener{
 		try {
 			oos = new ObjectOutputStream(openFileOutput(fileName, MODE_PRIVATE));
 			oos.writeObject(InventoryHolder.getInventory());
+			oos.flush();
+			oos.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		fileName = "citFile.dat";
+		try {
+			oos = new ObjectOutputStream(openFileOutput(fileName, MODE_PRIVATE));
+			oos.writeObject(CitizenHolder.getInstance());
 			oos.flush();
 			oos.close();
 		} catch (FileNotFoundException e) {
@@ -185,26 +223,44 @@ public class MainActivity extends Activity implements SensorEventListener{
 				holder.add(item);
 			}
 		}
+		fileName = "citFile.dat";
+		File citFile = new File(this.getFilesDir(), fileName);
+		//citFile.delete();
+		if (citFile.exists()){
+			ObjectInputStream ois;
+			Object result = null;
+			try {
+				ois = new ObjectInputStream(openFileInput(fileName));
+				result = ois.readObject();
+				ois.close();
+			} catch (StreamCorruptedException e) {
+				e.printStackTrace();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+			CitizenHolder.setInstance((CitizenHolder)result);
+		}
 	}
 
 	/**Draws the map and sets the interact button text
 	 * @param location
 	 */
-	private void drawMap(Location location){
-		this.location = location;
+	private void drawMap(){
+		TextView coordinates = (TextView)findViewById(R.id.coordinates);
+		coordinates.setText("Coordinates: " + curCoord.x + " " + curCoord.y);
 		Map<Coord, Tile> tiles = TileHolder.getTiles();
 		int[] squares = {R.id.imageView1,R.id.imageView2,R.id.imageView3,
 				R.id.imageView4,R.id.imageView5,R.id.imageView6,
 				R.id.imageView7,R.id.imageView8,R.id.imageView9};
-		Coord cur = null;
-		if (location != null){
-			cur = new Coord(location);
-		}
 		for (int y = 0; y < 3; y++){
 			for (int x = 0; x < 3; x++){
 				ImageView square = (ImageView)findViewById(squares[x+(y*3)]);
-				if (cur != null) {
-					Coord disp = cur.getRelative(x - 1, y - 1);
+				if (curCoord != null) {
+					Coord disp = curCoord.getRelative(x - 1, y - 1);
 					if (!tiles.containsKey(disp)) {
 						tiles.put(disp, new Tile(disp));
 					}
@@ -215,28 +271,38 @@ public class MainActivity extends Activity implements SensorEventListener{
 				}
 			}
 		}
+		drawButtons();
+	}
+
+	private void drawButtons(){
 		//set text and visibility for buttons
 		Button interact = (Button)findViewById(R.id.interact);
 		Button destroy = (Button)findViewById(R.id.destroy);
-		if (cur != null){
-			Tile tile = tiles.get(cur);
+		Button inventory = (Button)findViewById(R.id.inventory);
+		if (curCoord != null){
+			interact.setVisibility(View.VISIBLE);
+			inventory.setVisibility(View.VISIBLE);
+			Tile tile = TileHolder.getTiles().get(curCoord);
 			if (tile.aboveGround instanceof Warehouse){
 				interact.setVisibility(View.GONE);
 			}
 			else if (tile.aboveGround instanceof Plain || tile.aboveGround instanceof Forest){
 				destroy.setVisibility(View.GONE);
 			}
-			else{
-				interact.setText(tile.aboveGround.type.interactText());
-			}
+			interact.setText(tile.aboveGround.type.interactText());
+		}
+		else{
+			interact.setVisibility(View.GONE);
+			inventory.setVisibility(View.GONE);
 		}
 	}
 
-	private void drawDir(float x, float y){
+	private void drawDir(float azimuth){
 		Matrix matrix=new Matrix();
 		ImageView dir = (ImageView) findViewById(R.id.direction);
 		dir.setScaleType(ScaleType.MATRIX);   //required
-		double angle = Math.toDegrees(Math.atan(x/y));
+		double angle = Math.toDegrees(-azimuth);
+		Log.v("angle", Double.toString(angle));
 		matrix.postRotate((float) angle, dir.getDrawable().getBounds().width()/2, dir.getDrawable().getBounds().height()/2);
 		//reset the image back to facing up before rotating
 		dir.setImageResource(R.drawable.direction);
@@ -255,7 +321,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 	 * 
 	 */
 	public void interact(View v){
-		Tile curTile = TileHolder.getTiles().get(new Coord(location));
+		Tile curTile = TileHolder.getTiles().get(curCoord);
 		if (curTile.aboveGround instanceof Plain){
 			Intent intent = new Intent(this, BuildActivity.class);
 			startActivity(intent);
@@ -265,14 +331,41 @@ public class MainActivity extends Activity implements SensorEventListener{
 			startActivity(intent);
 		}
 	}
-	
+
 	/**The method that fires on the destroy button's onClick
 	 * 
 	 */
 	public void destroy(View v){
-		//TODO pop up a dialog that notifies that all of the items in
-		//the structure's inventory will be lost
-		TileHolder.getTiles().get(new Coord(location)).aboveGround = new Plain();
+		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+				this);
+
+		// set title
+		alertDialogBuilder.setTitle("Destroy? This will delete this structure's inventory");
+
+		// set dialog message
+		alertDialogBuilder
+		.setMessage("Click no to exit")
+		.setCancelable(false)
+		.setPositiveButton("Yes",new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog,int id) {
+				TileHolder.getTiles().get(curCoord).aboveGround = new Plain();
+				drawMap();
+				dialog.cancel();
+			}
+		})
+		.setNegativeButton("No",new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog,int id) {
+				// if this button is clicked, just close
+				// the dialog box and do nothing
+				dialog.cancel();
+			}
+		});
+
+		// create alert dialog
+		AlertDialog alertDialog = alertDialogBuilder.create();
+
+		// show it
+		alertDialog.show();
 	}
 
 }

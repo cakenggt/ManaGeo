@@ -34,6 +34,14 @@ public class Coord implements Serializable{
 		return new Coord(x, y);
 	}
 	
+	/**This mutates the coord into the parameter
+	 * @param c - coord to mutate this into
+	 */
+	public void change(Coord c){
+		x = c.x;
+		y = c.y;
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
         if (obj == null)

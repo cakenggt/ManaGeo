@@ -32,12 +32,15 @@ public class Mine extends Structure implements StructureInterface{
 			else{
 				Rock rock = tile.belowGround;
 				Ore ore = rock.ore;
+				List<Item> toAdd = new ArrayList<Item>();
 				if (Math.random()/(mag/10) < ore.density){
-					List<Item> toAdd = new ArrayList<Item>();
 					toAdd.add(new Item(Material.valueOf(ore.type.toString() + "_ORE"), 1));
-					if (addItems(toAdd)){
-						ore.density = ore.density * ore.depth;
-					}
+				}
+				else{
+					toAdd.add(new Item(Material.valueOf(rock.type.toString()), 1));
+				}
+				if (addItems(toAdd)){
+					ore.density = ore.density * ore.depth;
 				}
 			}
 		}

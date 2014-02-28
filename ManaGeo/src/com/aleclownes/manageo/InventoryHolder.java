@@ -10,12 +10,15 @@ import java.util.List;
 public class InventoryHolder {
 	private static final int inventorySize = 10;
 	private static final List<Item> inventory;
+	private static final Coord recentCoord;
 
 	static {
 		inventory = new ArrayList<Item>();
+		recentCoord = new Coord(0, 0);
 	}
 
 	public static List<Item> getInventory() {return inventory;}
+	public static Coord getRecentCoord() {return recentCoord;}
 	public static int getInventorySize() {return inventorySize;}
 
 	/**Adds a list of items to the player's inventory if the inventory is big enough
@@ -42,7 +45,7 @@ public class InventoryHolder {
 					}
 				}
 				if (toAdd && item.quantity != 0){
-					inventory.add(item);
+					inventory.add(item.copy());
 				}
 			}
 			return true;

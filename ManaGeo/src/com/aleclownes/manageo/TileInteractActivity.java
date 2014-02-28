@@ -1,6 +1,7 @@
 package com.aleclownes.manageo;
 
 import Structures.Forest;
+import Structures.Plain;
 import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
@@ -25,14 +26,14 @@ public class TileInteractActivity extends Activity implements SensorEventListene
 	LocationManager locationManager;
 	SensorManager mSensorManager;
 	Sensor mAccel;
-	Coord curCoord;
 	Tile curTile;
-	Location curLoc;
+	Coord curCoord;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_tile_interact);
+		curCoord = InventoryHolder.getRecentCoord();
 
 		mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
 		mAccel = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
@@ -43,14 +44,11 @@ public class TileInteractActivity extends Activity implements SensorEventListene
 		LocationListener locationListener = new LocationListener() {
 			public void onLocationChanged(Location location) {
 				// Called when a new location is found by the network location provider.
-				curLoc = location;
-				curCoord = new Coord(curLoc);
 				curTile = TileHolder.getTiles().get(curCoord);
 				Coord newCoord = new Coord(location);
-				if (curCoord != null){
-					if (!newCoord.equals(curCoord)){
-						finish();
-					}
+				if (!newCoord.equals(InventoryHolder.getRecentCoord())){
+					InventoryHolder.getRecentCoord().change(newCoord);
+					finish();
 				}
 			}
 
@@ -72,31 +70,30 @@ public class TileInteractActivity extends Activity implements SensorEventListene
 	@Override
 	public void onResume(){
 		super.onResume();
-		Location curLoc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 		mSensorManager.registerListener(this, mAccel, SensorManager.SENSOR_DELAY_NORMAL);
-		if (curLoc != null){
-			curCoord = new Coord(curLoc);
-			curTile = TileHolder.getTiles().get(curCoord);
-			((ListView)findViewById(R.id.tile_inventory_list)).setAdapter(new ItemAdapter(this));
-			//Setting whether you are interacting or building the structure
-			TextView interactText = (TextView)findViewById(R.id.mineCost);
-			ProgressBar progress = (ProgressBar)findViewById(R.id.progressBar1);
-			if (!(curTile.aboveGround instanceof Forest)){
-				if (curTile.aboveGround.durability < curTile.aboveGround.type.durability()){
-					interactText.setText("Building");
-					progress.setIndeterminate(false);
-					progress.setMax((int) curTile.aboveGround.type.durability());
-					progress.setProgress((int) curTile.aboveGround.durability);
-				}
-				else{
-					progress.setIndeterminate(true);
-				}
+		curTile = TileHolder.getTiles().get(InventoryHolder.getRecentCoord());
+		((ListView)findViewById(R.id.tile_inventory_list)).setAdapter(new ItemAdapter(this));
+		//Setting whether you are interacting or building the structure
+		TextView interactText = (TextView)findViewById(R.id.mineCost);
+		ProgressBar progress = (ProgressBar)findViewById(R.id.progressBar1);
+		if (!(curTile.aboveGround instanceof Forest)){
+			if (curTile.aboveGround.durability < curTile.aboveGround.type.durability()){
+				interactText.setText("Building");
+				progress.setIndeterminate(false);
+				progress.setMax((int) curTile.aboveGround.type.durability());
+				progress.setProgress((int) curTile.aboveGround.durability);
 			}
 			else{
-				interactText.setText("Cut");
+				interactText.setText(curTile.aboveGround.type.interactText());
+				progress.setIndeterminate(true);
 			}
 		}
-
+		else{
+			progress.setIndeterminate(false);
+			progress.setMax((int) curTile.aboveGround.type.durability());
+			progress.setProgress((int) curTile.aboveGround.durability);
+			interactText.setText("Cut");
+		}
 	}
 
 	@Override
@@ -126,6 +123,9 @@ public class TileInteractActivity extends Activity implements SensorEventListene
 				mag += Math.abs(value);
 			}
 			((StructureInterface) curTile.aboveGround).interact(curTile, mag);
+			if (curTile.aboveGround instanceof Plain){
+				finish();
+			}
 			((ListView)findViewById(R.id.tile_inventory_list)).setAdapter(new ItemAdapter(this));
 			//Setting whether you are interacting or building the structure
 			TextView interactText = (TextView)findViewById(R.id.mineCost);
@@ -138,8 +138,15 @@ public class TileInteractActivity extends Activity implements SensorEventListene
 					progress.setProgress((int) curTile.aboveGround.durability);
 				}
 				else{
+					interactText.setText(curTile.aboveGround.type.interactText());
 					progress.setIndeterminate(true);
 				}
+			}
+			else{
+				interactText.setText("Cutting");
+				progress.setIndeterminate(false);
+				progress.setMax((int) curTile.aboveGround.type.durability());
+				progress.setProgress((int) curTile.aboveGround.durability);
 			}
 		}
 	}

@@ -31,7 +31,10 @@ public class Forest extends Structure implements StructureInterface{
 			durability -= mag/10;
 		}
 		if (durability <= 0){
+			@SuppressWarnings({ "unchecked", "rawtypes" })
+			List<Item> copy = (List<Item>) ((ArrayList)tile.aboveGround.inventory).clone();
 			tile.aboveGround = new Plain();
+			tile.aboveGround.addItems(copy);
 		}
 	}
 
