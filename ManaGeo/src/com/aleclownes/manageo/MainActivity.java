@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +24,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -45,6 +47,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 	Coord curCoord;
 	float [] accele = new float [3];
 	float [] magnet = new float [3];
+	private Handler mHandler;
 	
 
 	@Override
@@ -83,6 +86,8 @@ public class MainActivity extends Activity implements SensorEventListener{
 					LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
 		} catch (IllegalArgumentException e) {
 		}
+		mHandler = new Handler();
+		startRepeatingTask();
 	}
 
 	@Override
@@ -99,6 +104,11 @@ public class MainActivity extends Activity implements SensorEventListener{
 		super.onPause();
 		save();
 		mSensorManager.unregisterListener(this);
+	}
+	
+	@Override
+	public void onDestroy(){
+		stopRepeatingTask();
 	}
 
 	@Override
@@ -367,5 +377,54 @@ public class MainActivity extends Activity implements SensorEventListener{
 		// show it
 		alertDialog.show();
 	}
+	
+	Runnable mStatusChecker = new Runnable() {
+	    @SuppressWarnings("static-access")
+		@Override 
+	    public void run() {
+	      mHandler.postDelayed(mStatusChecker, 1000);
+	      for (Citizen citizen : CitizenHolder.getInstance().getCitizens()){
+	    	  if (citizen.getWork() != null){
+	    		  Tile work = citizen.getWork();
+	    		  if (citizen.getDestination() != null && citizen.getMaterial() != null){
+	    			  //This citizen is a courier
+	    			  List<Item> transfers = new ArrayList<Item>();
+	    			  Tile dest = citizen.getDestination();
+	    			  Material mat = citizen.getMaterial();
+	    			  Iterator<Item> it = work.aboveGround.inventory.iterator();
+	    			  while (it.hasNext()){
+	    				  Item item = it.next();
+	    				  if (item.getType() == mat){
+	    					  if (item.getQuantity() > 10){
+	    						  item.setQuantity(item.getQuantity()-10);
+	    						  transfers.add(new Item(item.getType(), 10));
+	    					  }
+	    					  else{
+	    						  transfers.add(item.copy());
+	    						  it.remove();
+	    					  }
+	    					  break;
+	    				  }
+	    			  }
+	    			  if (!dest.aboveGround.addItems(transfers)){
+	    				  work.aboveGround.addItems(transfers);
+	    			  }
+	    		  }
+	    		  else{
+	    			  //This citizen is not a courier
+	    			  ((StructureInterface)work.aboveGround).interact(work, 11);
+	    		  }
+	    	  }
+	      }
+	    }
+	  };
+
+	  void startRepeatingTask() {
+	    mStatusChecker.run(); 
+	  }
+
+	  void stopRepeatingTask() {
+	    mHandler.removeCallbacks(mStatusChecker);
+	  }
 
 }
