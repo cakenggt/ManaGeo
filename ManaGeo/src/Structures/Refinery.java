@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import android.app.Activity;
+
 import com.aleclownes.manageo.Item;
 import com.aleclownes.manageo.Material;
 import com.aleclownes.manageo.Structure;
@@ -23,7 +25,7 @@ public class Refinery extends Structure implements StructureInterface {
 	}
 	
 	@Override
-	public void interact(Tile tile, float mag) {
+	public void interact(Activity act, Tile tile, float mag) {
 		if (mag > 10){
 			int num = (int)mag/10;
 			Iterator<Item> it = inventory.iterator();

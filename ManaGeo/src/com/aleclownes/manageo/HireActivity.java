@@ -12,10 +12,18 @@ public class HireActivity extends Activity {
 	
 	Citizen citizen;
 
+	@SuppressWarnings("static-access")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_hire);
+		String citizenName = getIntent().getExtras().getString("citizenName");
+		for (Citizen cit : CitizenHolder.getInstance().getCitizens()){
+			if (cit.getName().equals(citizenName)){
+				citizen = cit;
+				return;
+			}
+		}
 	}
 
 	@Override
@@ -25,19 +33,12 @@ public class HireActivity extends Activity {
 		return true;
 	}
 	
-	@SuppressWarnings("static-access")
 	@Override
 	public void onResume(){
+		super.onResume();
 		Spinner materialSpinner = (Spinner)findViewById(R.id.materialSpinner);
 		ArrayAdapter<Material> spinnerArrayAdapter = new ArrayAdapter<Material>(this, android.R.layout.simple_spinner_dropdown_item, Material.values());
 		materialSpinner.setAdapter(spinnerArrayAdapter);
-		long citizenName = getIntent().getLongExtra("citizenName", 0);
-		for (Citizen cit : CitizenHolder.getInstance().getCitizens()){
-			if (cit.getName() == citizenName){
-				citizen = cit;
-				return;
-			}
-		}
 		finish();
 	}
 	

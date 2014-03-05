@@ -33,5 +33,8 @@
     <string name="source_y_coord">Source Y Coordinate</string>
     <string name="source_material">Material to Transport</string>
     <string name="finish">Finish</string>
+    <string name="citizens">Citizens</string>
+    <string name="build_house">House</string>
+    <string name="houseCost">Cost: 3 Wood</string>
 
 </resources>

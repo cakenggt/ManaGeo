@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import Structures.Forest;
+import Structures.House;
 import Structures.Plain;
 import Structures.Warehouse;
 import android.graphics.Matrix;
@@ -30,7 +31,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -48,7 +48,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 	float [] accele = new float [3];
 	float [] magnet = new float [3];
 	private Handler mHandler;
-	
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -105,9 +105,10 @@ public class MainActivity extends Activity implements SensorEventListener{
 		save();
 		mSensorManager.unregisterListener(this);
 	}
-	
+
 	@Override
 	public void onDestroy(){
+		super.onDestroy();
 		stopRepeatingTask();
 	}
 
@@ -144,6 +145,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 		drawButtons();
 	}
 
+	@SuppressWarnings("static-access")
 	private void save(){
 		System.out.println("Saving files");
 		String fileName = "tileFile.dat";		
@@ -172,7 +174,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 		fileName = "citFile.dat";
 		try {
 			oos = new ObjectOutputStream(openFileOutput(fileName, MODE_PRIVATE));
-			oos.writeObject(CitizenHolder.getInstance());
+			oos.writeObject(CitizenHolder.getInstance().getCitizens());
 			oos.flush();
 			oos.close();
 		} catch (FileNotFoundException e) {
@@ -182,7 +184,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 		}
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "static-access" })
 	private void load(){
 		System.out.println("Loading files");
 		String fileName = "tileFile.dat";
@@ -229,6 +231,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 				e.printStackTrace();
 			}
 			List<Item> holder = InventoryHolder.getInventory();
+			holder.clear();
 			for (Item item : ((ArrayList<Item>)result)){
 				holder.add(item);
 			}
@@ -252,7 +255,11 @@ public class MainActivity extends Activity implements SensorEventListener{
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			}
-			CitizenHolder.setInstance((CitizenHolder)result);
+			List<Citizen> holder = CitizenHolder.getInstance().getCitizens();
+			holder.clear();
+			for (Citizen cit : ((ArrayList<Citizen>)result)){
+				holder.add(cit);
+			}
 		}
 	}
 
@@ -293,13 +300,21 @@ public class MainActivity extends Activity implements SensorEventListener{
 			interact.setVisibility(View.VISIBLE);
 			inventory.setVisibility(View.VISIBLE);
 			Tile tile = TileHolder.getTiles().get(curCoord);
-			if (tile.aboveGround instanceof Warehouse){
-				interact.setVisibility(View.GONE);
+			if (tile.aboveGround.durability < tile.aboveGround.type.durability()){
+				interact.setText("Build");
 			}
-			else if (tile.aboveGround instanceof Plain || tile.aboveGround instanceof Forest){
+			else{
+				if (tile.aboveGround instanceof Warehouse || tile.aboveGround instanceof House){
+					interact.setVisibility(View.GONE);
+				}
+				interact.setText(tile.aboveGround.type.interactText());
+			}
+			if (tile.aboveGround instanceof Plain || tile.aboveGround instanceof Forest){
 				destroy.setVisibility(View.GONE);
 			}
-			interact.setText(tile.aboveGround.type.interactText());
+			else{
+				destroy.setVisibility(View.VISIBLE);
+			}
 		}
 		else{
 			interact.setVisibility(View.GONE);
@@ -312,7 +327,6 @@ public class MainActivity extends Activity implements SensorEventListener{
 		ImageView dir = (ImageView) findViewById(R.id.direction);
 		dir.setScaleType(ScaleType.MATRIX);   //required
 		double angle = Math.toDegrees(-azimuth);
-		Log.v("angle", Double.toString(angle));
 		matrix.postRotate((float) angle, dir.getDrawable().getBounds().width()/2, dir.getDrawable().getBounds().height()/2);
 		//reset the image back to facing up before rotating
 		dir.setImageResource(R.drawable.direction);
@@ -377,54 +391,61 @@ public class MainActivity extends Activity implements SensorEventListener{
 		// show it
 		alertDialog.show();
 	}
-	
+
+	public void citizens(View v){
+		Intent intent = new Intent(this, CitizenActivity.class);
+		startActivity(intent);
+	}
+
 	Runnable mStatusChecker = new Runnable() {
-	    @SuppressWarnings("static-access")
+		@SuppressWarnings("static-access")
 		@Override 
-	    public void run() {
-	      mHandler.postDelayed(mStatusChecker, 1000);
-	      for (Citizen citizen : CitizenHolder.getInstance().getCitizens()){
-	    	  if (citizen.getWork() != null){
-	    		  Tile work = citizen.getWork();
-	    		  if (citizen.getDestination() != null && citizen.getMaterial() != null){
-	    			  //This citizen is a courier
-	    			  List<Item> transfers = new ArrayList<Item>();
-	    			  Tile dest = citizen.getDestination();
-	    			  Material mat = citizen.getMaterial();
-	    			  Iterator<Item> it = work.aboveGround.inventory.iterator();
-	    			  while (it.hasNext()){
-	    				  Item item = it.next();
-	    				  if (item.getType() == mat){
-	    					  if (item.getQuantity() > 10){
-	    						  item.setQuantity(item.getQuantity()-10);
-	    						  transfers.add(new Item(item.getType(), 10));
-	    					  }
-	    					  else{
-	    						  transfers.add(item.copy());
-	    						  it.remove();
-	    					  }
-	    					  break;
-	    				  }
-	    			  }
-	    			  if (!dest.aboveGround.addItems(transfers)){
-	    				  work.aboveGround.addItems(transfers);
-	    			  }
-	    		  }
-	    		  else{
-	    			  //This citizen is not a courier
-	    			  ((StructureInterface)work.aboveGround).interact(work, 11);
-	    		  }
-	    	  }
-	      }
-	    }
-	  };
+		public void run() {
+			mHandler.postDelayed(mStatusChecker, 5000);
+			for (Citizen citizen : CitizenHolder.getInstance().getCitizens()){
+				if (citizen.getWork() != null){
+					Tile work = citizen.getWork();
+					if (citizen.getDestination() != null && citizen.getMaterial() != null){
+						//This citizen is a courier
+						List<Item> transfers = new ArrayList<Item>();
+						Tile dest = citizen.getDestination();
+						Material mat = citizen.getMaterial();
+						Iterator<Item> it = work.aboveGround.inventory.iterator();
+						while (it.hasNext()){
+							Item item = it.next();
+							if (item.getType() == mat){
+								if (item.getQuantity() > 10){
+									item.setQuantity(item.getQuantity()-10);
+									transfers.add(new Item(item.getType(), 10));
+								}
+								else{
+									transfers.add(item.copy());
+									it.remove();
+								}
+								break;
+							}
+						}
+						if (!dest.aboveGround.addItems(transfers)){
+							work.aboveGround.addItems(transfers);
+						}
+					}
+					else{
+						//This citizen is not a courier
+						if (!(work.aboveGround instanceof House)){
+							((StructureInterface)work.aboveGround).interact(MainActivity.this, work, 11);
+						}
+					}
+				}
+			}
+		}
+	};
 
-	  void startRepeatingTask() {
-	    mStatusChecker.run(); 
-	  }
+	void startRepeatingTask() {
+		mStatusChecker.run(); 
+	}
 
-	  void stopRepeatingTask() {
-	    mHandler.removeCallbacks(mStatusChecker);
-	  }
+	void stopRepeatingTask() {
+		mHandler.removeCallbacks(mStatusChecker);
+	}
 
 }

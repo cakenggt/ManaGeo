@@ -56,5 +56,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/warehouseCost" />
+    
+    <Button
+        android:id="@+id/house_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="buildHouse"
+        android:text="@string/build_house" />
+
+    <TextView
+        android:id="@+id/houseCost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/houseCost" />
 
 </LinearLayout>

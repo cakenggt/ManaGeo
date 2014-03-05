@@ -7,7 +7,8 @@ public enum StructureType {
 	MINE (200, 20, "Mine", R.drawable.mine),
 	REFINERY (300, 30, "Refine", R.drawable.refinery),
 	WAREHOUSE (400, 100, "Store", R.drawable.warehouse),
-	PLAIN (0, 10, "Build", R.drawable.plain);
+	PLAIN (0, 10, "Build", R.drawable.plain),
+	HOUSE (100, 10, "Live", R.drawable.house);
 	
 	private final double durability;
 	private final int inventorySize;

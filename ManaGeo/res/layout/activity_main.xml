@@ -146,5 +146,12 @@
         android:layout_height="wrap_content"
         android:onClick="destroy"
         android:text="@string/destroy" />
+    
+    <Button
+        android:id="@+id/citizens"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="citizens"
+        android:text="@string/citizens" />
 
 </LinearLayout>
