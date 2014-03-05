@@ -3,6 +3,8 @@ package Structures;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.Activity;
+
 import com.aleclownes.manageo.Item;
 import com.aleclownes.manageo.Material;
 import com.aleclownes.manageo.Structure;
@@ -21,10 +23,8 @@ public class Forest extends Structure implements StructureInterface{
 	}
 
 	@Override
-	public void interact(Tile tile, float mag) {
+	public void interact(Activity act, Tile tile, float mag) {
 		if (mag > 10){
-			System.out.println("Swing was " + mag);
-			System.out.println("Durability is now " + durability);
 			List<Item> toAdd = new ArrayList<Item>();
 			toAdd.add(new Item(Material.WOOD, (int)(mag/10)));
 			addItems(toAdd);

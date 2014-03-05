@@ -1,6 +1,15 @@
 package com.aleclownes.manageo;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import android.content.Context;
+import android.content.res.Resources;
 
 public class Citizen implements Serializable {
 
@@ -12,11 +21,46 @@ public class Citizen implements Serializable {
 	Tile work;
 	Tile dest;
 	Material mat;
-	final long name;
+	final String name;
 
-	public Citizen (Tile home){
+	@SuppressWarnings("static-access")
+	public Citizen (Tile home, Context context){
 		this.home = home;
-		this.name = System.currentTimeMillis()/1000;
+		Resources resources = context.getResources();
+		InputStream iS = null;
+		try {
+			iS = resources.getAssets().open("census-derived-all-first.txt");
+		} catch (IOException e) {
+			this.name = "JOHN";
+			return;
+		}
+		BufferedReader reader = new BufferedReader(new InputStreamReader(iS));
+		String line;
+		try {
+			line = reader.readLine();
+		} catch (IOException e) {
+			this.name = "JOHN";
+			return;
+		}
+		List<String> nameList = new ArrayList<String>();
+		while (line != null){
+			nameList.add(line.split("\\s+")[0]);
+			try {
+				line = reader.readLine();
+			} catch (IOException e) {
+				this.name = "JOHN";
+				return;
+			}
+		}
+		List<String> usedNames = new ArrayList<String>();
+		for (Citizen cit : CitizenHolder.getInstance().getCitizens()){
+			usedNames.add(cit.getName());
+		}
+		String newName = "";
+		do {
+			newName = nameList.get((int) (Math.random()*nameList.size()));
+		} while(usedNames.contains(newName));
+		this.name = newName;
 	}
 
 	/**Gets the material a warehouse worker transports. Can be null if the worker is not
@@ -46,7 +90,7 @@ public class Citizen implements Serializable {
 		work = til;
 	}
 
-	public long getName(){
+	public String getName(){
 		return name;
 	}
 	

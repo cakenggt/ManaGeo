@@ -1,5 +1,7 @@
 package Structures;
 
+import android.app.Activity;
+
 import com.aleclownes.manageo.Structure;
 import com.aleclownes.manageo.StructureInterface;
 import com.aleclownes.manageo.StructureType;
@@ -17,6 +19,6 @@ public class Warehouse extends Structure implements StructureInterface {
 	}
 
 	@Override
-	public void interact(Tile tile, float mag) {}
+	public void interact(Activity act, Tile tile, float mag) {}
 
 }

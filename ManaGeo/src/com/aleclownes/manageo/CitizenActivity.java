@@ -1,5 +1,6 @@
 package com.aleclownes.manageo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.location.Location;
@@ -24,13 +25,13 @@ public class CitizenActivity extends Activity {
 	LocationManager locationManager;
 	Coord curCoord;
 	Tile curTile;
-	List<Citizen> employedHere;
-	List<Citizen> unemployed;
+	List<Citizen> employedHere = new ArrayList<Citizen>();
+	List<Citizen> unemployed = new ArrayList<Citizen>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_inventory);
+		setContentView(R.layout.activity_citizen);
 		curCoord = InventoryHolder.getRecentCoord();
 		curTile = TileHolder.getTiles().get(curCoord);
 		refreshLists();
@@ -81,12 +82,14 @@ public class CitizenActivity extends Activity {
 	 */
 	@SuppressWarnings("static-access")
 	public void refreshLists(){
+		unemployed.clear();
+		employedHere.clear();
 		for (Citizen cit : CitizenHolder.getInstance().getCitizens()){
-			if (cit.getWork().equals(curTile)){
-				employedHere.add(cit);
-			}
-			else if (cit.getWork() == null){
+			if (cit.getWork() == null){
 				unemployed.add(cit);
+			}
+			else if (cit.getWork().equals(curTile)){
+				employedHere.add(cit);
 			}
 		}
 		((ListView)findViewById(R.id.employed_list)).setAdapter(new TileEmployeeAdapter(this));
@@ -109,7 +112,7 @@ public class CitizenActivity extends Activity {
 			LayoutInflater inflater = context.getLayoutInflater();
 			final View row = inflater.inflate(R.layout.citizen_row, null);
 			TextView name = (TextView)row.findViewById(R.id.citizen_name);
-			name.setText(Long.toString(cit.getName()));
+			name.setText(cit.getName());
 			Button button = (Button)row.findViewById(R.id.hire_fire_button);
 			button.setText("Fire");
 			button.setOnClickListener(new CitizenFireListener(row, cit));
@@ -135,7 +138,7 @@ public class CitizenActivity extends Activity {
 			LayoutInflater inflater = context.getLayoutInflater();
 			final View row = inflater.inflate(R.layout.citizen_row, null);
 			TextView name = (TextView)row.findViewById(R.id.citizen_name);
-			name.setText(Long.toString(cit.getName()));
+			name.setText(cit.getName());
 			Button button = (Button)row.findViewById(R.id.hire_fire_button);
 			button.setText("Hire");
 			button.setOnClickListener(new CitizenHireListener(row, cit));
@@ -154,14 +157,8 @@ public class CitizenActivity extends Activity {
 
 		@Override
 		public void onClick(View v) {
-			// TODO Always open up the destination and material dialog
-			// and check in that dialog if the submitted answers are
-			// empty, and if they are, set those to null and have the
-			// citizen do normal interact() labor in this tile
 			Intent intent = new Intent(CitizenActivity.this, HireActivity.class);
 			intent.putExtra("citizenName", citizen.getName());
-			// TODO get this name by calling getIntent() and then
-			// getLongExtra("citizenName")
 			startActivity(intent);
 			citizen.setWork(curTile);
 			CitizenActivity.this.refreshLists();

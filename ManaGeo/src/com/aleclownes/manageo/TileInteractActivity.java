@@ -1,7 +1,9 @@
 package com.aleclownes.manageo;
 
 import Structures.Forest;
+import Structures.House;
 import Structures.Plain;
+import Structures.Warehouse;
 import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
@@ -122,10 +124,11 @@ public class TileInteractActivity extends Activity implements SensorEventListene
 			for (float value : event.values){
 				mag += Math.abs(value);
 			}
-			((StructureInterface) curTile.aboveGround).interact(curTile, mag);
-			if (curTile.aboveGround instanceof Plain){
+			if (curTile.aboveGround instanceof Plain || (curTile.aboveGround instanceof House || curTile.aboveGround instanceof Warehouse) && curTile.aboveGround.durability >= curTile.aboveGround.type.durability()){
 				finish();
+				return;
 			}
+			((StructureInterface) curTile.aboveGround).interact(this, curTile, mag);
 			((ListView)findViewById(R.id.tile_inventory_list)).setAdapter(new ItemAdapter(this));
 			//Setting whether you are interacting or building the structure
 			TextView interactText = (TextView)findViewById(R.id.mineCost);

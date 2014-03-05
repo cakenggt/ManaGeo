@@ -3,6 +3,7 @@ package com.aleclownes.manageo;
 import java.util.ArrayList;
 import java.util.List;
 
+import Structures.House;
 import Structures.Mine;
 import Structures.Refinery;
 import Structures.Warehouse;
@@ -168,6 +169,27 @@ public class BuildActivity extends Activity {
 		}
 		else{
 			Toast.makeText(this, "You do not have enough resources to build the warehouse", Toast.LENGTH_LONG).show();
+		}
+	}
+	
+	/**If the house button is clicked
+	 * @param view
+	 */
+	public void buildHouse(View view){
+		//tileInventory resource check for 5 wood, 2 granite, 3 iron
+		List<Item> items = new ArrayList<Item>();
+		items.add(new Item(Material.WOOD, 3));
+		if (curTile.aboveGround.removeItems(items)){
+			List<Item> newInv = new ArrayList<Item>();
+			for (Item item : curTile.aboveGround.inventory){
+				newInv.add(item.copy());
+			}
+			curTile.aboveGround = new House();
+			curTile.aboveGround.addItems(newInv);
+			finish();
+		}
+		else{
+			Toast.makeText(this, "You do not have enough resources to build a house", Toast.LENGTH_LONG).show();
 		}
 	}
 

@@ -3,6 +3,8 @@ package Structures;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.Activity;
+
 import com.aleclownes.manageo.Item;
 import com.aleclownes.manageo.Material;
 import com.aleclownes.manageo.Ore;
@@ -24,7 +26,7 @@ public class Mine extends Structure implements StructureInterface{
 	}
 	
 	@Override
-	public void interact(Tile tile, float mag) {
+	public void interact(Activity act, Tile tile, float mag) {
 		if (mag > 10){
 			if (durability < type.durability()){
 				durability += mag/10;
